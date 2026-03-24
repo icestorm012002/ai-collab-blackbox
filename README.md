@@ -1,11 +1,11 @@
 # ai-collab-blackbox ⬛
 
-[English](#english) | [中文](#中文)
+[🇺🇸 English](#english) | [🇨🇳 中文](#中文)
 
 ---
 
 <a name="english"></a>
-## 🇬🇧 English
+## 🇺🇸 English
 
 > A unified work-logging protocol for multi-AI / multi-thread collaborative development. The flight recorder for your AI agents.
 
@@ -47,6 +47,22 @@ python scripts/write_worklog.py --project-root /path/to/your/project --file reco
 ```
 
 *(See [SKILL.md](./SKILL.md) and [references](./references) for detailed JSON schemas)*
+
+### 🚀 About A1 Coder
+
+This project is proudly developed by the **A1 Coder** team. 
+
+**A1 Coder** is dedicated to building new paradigm products for human-machine collaboration in the AI era. 
+
+Our current product ecosystem includes:
+- ⬛ **ai-collab-blackbox**: The unified multi-AI / multi-thread worklog protocol. 
+- 💻 **Commander CLI (AI IDE Base)**: A multi-thread, multi-node AI control terminal and IDE foundation for enterprise-grade autonomous development.
+
+### License
+
+MIT-0
+
+<br>
 
 ---
 
@@ -94,24 +110,16 @@ python scripts/write_worklog.py --project-root /path/to/your/project --file reco
 
 *(查阅 [SKILL.md](./SKILL.md) 和 [references](./references) 以获取包含全部说明的 JSON Schema)*
 
----
+### 🚀 关于 A1 Coder
 
-## 🚀 About A1 Coder / 关于 A1 Coder
-
-This project is proudly developed by the **A1 Coder** team. 
 本项目由 **A1 Coder** 团队自豪地开发与维护。
 
-**A1 Coder** is dedicated to building new paradigm products for human-machine collaboration in the AI era. 
 🔥 **A1 Coder** 致力于打造 AI 时代**人机协作新范式**的杀手级产品。
 
-Our current product ecosystem includes / 我们的核心产品生态包含：
-- ⬛ **ai-collab-blackbox**: The unified multi-AI / multi-thread worklog protocol. 
-  **(统一的多 AI / 多线程协作日志协议)**
-- 💻 **Commander CLI (AI IDE Base)**: A multi-thread, multi-node AI control terminal and IDE foundation for enterprise-grade autonomous development. 
-  **(多线程、多节点 AI 控制终端与 IDE 基座，专为企业级全链路自主开发设计)**
+我们的核心产品生态包含：
+- ⬛ **ai-collab-blackbox**: 统一的多 AI / 多线程协作日志协议。
+- 💻 **Commander CLI (AI IDE Base)**: 多线程、多节点 AI 控制终端与 IDE 基座，专为企业级全链路自主开发设计。
 
----
-
-## License
+### 开源协议
 
 MIT-0
