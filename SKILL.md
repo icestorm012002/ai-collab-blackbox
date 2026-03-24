@@ -128,7 +128,7 @@ After finishing the current task round, the AI must execute the following steps:
 
 ### Step 1: Generate a temporary, non-real JSON record file
 
-The AI must write its structured JSON work log into a temporary file (e.g., `temp_worklog.json`). The AI must NEVER touch or attempt to write directly to the real `.ai/<AI_ID>/worklog.md` and related files itself.
+The AI must write its structured JSON work log strictly into a fixed temporary file named `temp_worklog.json` at the project root. The AI must NEVER touch or attempt to write directly to the real `.ai/<AI_ID>/worklog.md` and related files itself.
 
 ```json
 {
@@ -177,8 +177,8 @@ If validation fails, the script will output detailed errors, exit with code 1, a
 The following block can be used as a hard prompt for a coding AI:
 
 > When you complete the current task round, you must record this round's work in the `.ai/<AI_ID>/` directory.
-> Protocol constraint: You must NEVER touch the real `.ai` log files directly! First, you must write the record of your current work round (including timestamp, AI_ID assigned to you, feature name, output status, one-sentence summary, task completion state, modified files list, and file-specific refs) into a non-real, temporary JSON file.
-> Then, you must invoke the dedicated Python logging script (using the --file argument to pass your temporary file). This particular program will strictly write the records into worklog.md, worklog.jsonl, and summarize it in the global all_time.jsonl on your behalf. After the writing is finished, the program will wait exactly 1 second and then automatically delete your temporary JSON file.
+> Protocol constraint: You must NEVER touch the real `.ai` log files directly! First, you must write the record of your current work round (including timestamp, AI_ID assigned to you, feature name, output status, one-sentence summary, task completion state, modified files list, and file-specific refs) into a fixed temporary file exactly named `temp_worklog.json`.
+> Then, you must invoke the dedicated Python logging script (using strictly `--file temp_worklog.json` to specify your file). This particular program will strictly write the records into worklog.md, worklog.jsonl, and summarize it in the global all_time.jsonl on your behalf. After the writing is finished, the program will wait exactly 1 second and then automatically delete `temp_worklog.json` for you.
 > Your record structure must be 100% formatted, containing no arbitrary placeholder characters. The AI_ID must strictly use the externally assigned value passed to you; you are forbidden from inventing a name.
 
 ## Non-Goals
