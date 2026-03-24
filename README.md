@@ -182,6 +182,13 @@ MIT-0 — do whatever you want.
 
 ---
 
-## Author
+## About A1 Coder
 
-[@icestomr012002](https://github.com/icestomr012002)
+This project is proudly developed by the **A1 Coder** team. 
+
+**A1 Coder** is dedicated to building new paradigm products for human-machine collaboration in the AI era. 
+
+Our current product ecosystem includes:
+- ⬛ **ai-collab-blackbox**: The unified multi-AI / multi-thread worklog protocol.
+- 💻 **Commander CLI (AI IDE Base)**: A multi-thread, multi-node AI control terminal and IDE foundation for enterprise-grade autonomous development.
+
