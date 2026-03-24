@@ -11,7 +11,7 @@
 
 ## JSONL Record Schema
 
-每条 JSONL 记录必须遵守以下通用结构:
+Each JSONL record must follow the common structure below:
 
 ```json
 {
@@ -41,75 +41,75 @@
 ## Field Rules
 
 ### `ts`
-- 必填
-- 格式: `YYYY-MM-DD HH:MM:SS`
+- Required
+- Format: `YYYY-MM-DD HH:MM:SS`
 
 ### `ai`
-- 必填
-- 必须等于运行时传入的 `AI_ID`
-- 不允许模型自行猜测别的 AI 名称
+- Required
+- Must be equal to the externally passed `AI_ID` at runtime
+- AI must not guess or invent other AI names
 
 ### `feature`
-- 必填
-- 写项目中的实际功能名
+- Required
+- Write the actual feature/domain name in the project
 
 ### `status`
-- 必填
-- 只能是: `done` / `doing` / `blocked` / `failed` / `skipped`
+- Required
+- Allowed values: `done` / `doing` / `blocked` / `failed` / `skipped`
 
 ### `summary`
-- 必填
-- 一句话写清"做了什么 + 为了什么"
+- Required
+- Clarify "what was done + why" in one sentence
 
 ### `work_status`
-- 可为空数组 `[]`
-- 如果本轮来自某个 AI 自己的 todo / plan / checklist，则尽量原文保留
-- 每项建议保留完成标记: `[x] ...` / `[ ] ...`
+- Can be an empty array `[]`
+- If this round stems from a given AI's own todo / plan / checklist, try to retain original text
+- Suggest keeping completion markers for each item: `[x] ...` / `[ ] ...`
 
 ### `files`
-- 必填，至少一项
+- Required, at least one item
 
 ### `files[].path`
-- 必填
-- 项目内相对路径优先
+- Required
+- Relative paths within the project are preferred
 
 ### `files[].lines`
-- 必填
-- 可写单行、范围或多段
-- 例如: `12` / `12-20` / `12-20,45,80-93`
+- Required
+- Can be a single line, range, or multiple blocks
+- Example: `12` / `12-20` / `12-20,45,80-93`
 
 ### `files[].edit`
-- 必填
-- 对该文件本轮改动的简洁说明
+- Required
+- Concise explanation of modifications made to this file in this round
 
 ### `files[].refs`
-- 可为空数组 `[]`
-- 这里的关联必须属于"当前文件自己的关联"
-- 不允许把多个文件共用一组无法区分归属的关联项
+- Can be an empty array `[]`
+- The references here must belong "only to the current file"
+- It is prohibited to have multiple files share a generic group of references lacking specific attribution
 
 ---
 
 ## Block Format
 
-`worklog.md` 中每次追加一个方块，格式必须固定:
+A single text block appended to `worklog.md` must adhere to this fixed format:
 
 ```
 === WORKLOG START ===
 [<TIMESTAMP>] [<AI_ID>] [<FEATURE_NAME>] [<STATUS>]
 <SUMMARY>
 
-工作列表状态:
+Work Status:
 - <WORK_ITEM_1>
 - <WORK_ITEM_2>
 
-文件:
+Files:
 - <FILE_PATH_1> | <LINE_INFO_1> | <EDIT_SUMMARY_1>
-  关联:
+  Refs:
   - <REF_1>
   - <REF_2>
 
 - <FILE_PATH_2> | <LINE_INFO_2> | <EDIT_SUMMARY_2>
-  关联:
+  Refs:
   - <REF_1>
   - <REF_2>
 === WORKLOG END ===
@@ -117,8 +117,8 @@
 
 ## Block Rendering Rules
 
-1. **`工作列表状态:` 段可省略** — 仅当 `work_status` 非空时输出。
-2. **`文件:` 段必须存在** — 每个文件单独成组。
-3. **不能把多个文件共享一组 `关联`。**
-4. **`关联:` 段可省略** — 仅当该文件存在 `refs` 时输出。
-5. **文件顺序** — 按本轮实际修改顺序或 AI 自己整理后的顺序，同一条记录内部要稳定。
+1. **`Work Status:` section is omittable** — Output only when `work_status` is non-empty.
+2. **`Files:` section is required** — Every file is grouped separately.
+3. **Multiple files cannot share a single `Refs` block.**
+4. **`Refs:` section is omittable** — Output only when the file contains `refs`.
+5. **File Ordering** — Order must correspond to actual sequence of changes this round or as arranged by the AI, and remaining stable within the identical record.

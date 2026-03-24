@@ -2,8 +2,8 @@
 
 ## Table of Contents
 
-- [Mode A: AI outputs JSON first (推荐)](#mode-a-ai-outputs-json-first)
-- [Mode B: AI outputs block first (兼容)](#mode-b-ai-outputs-block-first)
+- [Mode A: AI outputs JSON first (Recommended)](#mode-a-ai-outputs-json-first)
+- [Mode B: AI outputs block first (Compatibility)](#mode-b-ai-outputs-block-first)
 - [Validation Rules](#validation-rules)
 - [Writing Rules](#writing-rules)
 - [Search Expectations](#search-expectations)
@@ -13,93 +13,93 @@
 
 ## Mode A: AI outputs JSON first
 
-**推荐模式。**
+**Recommended mode.**
 
-流程:
-1. AI 产出一条结构化 JSON
-2. 程序校验字段
-3. 程序将 JSON 追加到:
+Flow:
+1. AI outputs a structured JSON record
+2. Program validates fields
+3. Program appends JSON to:
    - `worklog.jsonl`
    - `all_time.jsonl`
-4. 程序将同一条 JSON 渲染为方块并追加到:
+4. Program renders the same JSON as a text block and appends to:
    - `worklog.md`
 
-优点:
-- 最稳定
-- 最好检索
-- 最好校验
-- 不怕 AI 方块格式漂移
+Pros:
+- Most stable
+- Best for search/retrieval
+- Best for validation
+- Immune to AI formatting drift for block text
 
 ## Mode B: AI outputs block first
 
-**兼容模式。**
+**Compatibility mode.**
 
-流程:
-1. AI 直接输出符合格式的方块文本
-2. 程序解析方块
-3. 程序转成 JSON
-4. 程序写入 `worklog.jsonl` 和 `all_time.jsonl`
-5. 如果程序确认方块格式标准，可原样追加到 `worklog.md`
-6. 如果方块格式不标准，程序可按解析结果重渲染标准方块再写入
+Flow:
+1. AI outputs block text conforming to format
+2. Program parses block
+3. Program converts to JSON
+4. Program writes to `worklog.jsonl` and `all_time.jsonl`
+5. If program confirms block format is standard, append as-is to `worklog.md`
+6. If block format is non-standard, program re-renders standard block from parsed results and writes it
 
 ---
 
 ## Validation Rules
 
-程序或 Skill 执行器应做以下校验:
+The program or Skill executor must validate the following:
 
-| 校验项 | 规则 |
+| Item | Rule |
 |--------|------|
-| `AI_ID` | 不能为空 |
-| `STATUS` | 必须在允许值内: `done` / `doing` / `blocked` / `failed` / `skipped` |
-| `SUMMARY` | 不能为空 |
-| `files` | 至少一项 |
-| `files[].path` | 必填 |
-| `files[].lines` | 必填 |
-| `files[].edit` | 必填 |
-| `files[].refs` | 如果存在，必须属于当前文件 |
-| 占位符检查 | 任何占位符不得原样落盘 (如 `<AI_ID>`, `<FILE_PATH>`, `<STATUS>`) |
+| `AI_ID` | Cannot be empty |
+| `STATUS` | Must be within allowed values: `done` / `doing` / `blocked` / `failed` / `skipped` |
+| `SUMMARY` | Cannot be empty |
+| `files` | At least one item |
+| `files[].path` | Required |
+| `files[].lines` | Required |
+| `files[].edit` | Required |
+| `files[].refs` | If present, must uniquely belong to the current file |
+| Placeholder Check | No placeholders should be written as-is (e.g., `<AI_ID>`, `<FILE_PATH>`, `<STATUS>`) |
 
-**若校验失败:**
-- 不应写入正式日志
-- 应返回错误信息给调用方
+**If validation fails:**
+- Must not write to official logs
+- Must return error message to the caller
 
 ---
 
 ## Writing Rules
 
-1. 所有写入都使用**追加模式**。
-2. 不覆盖历史记录。
-3. `worklog.md` 追加完整方块。
-4. `worklog.jsonl` 每条记录独占一行。
-5. `all_time.jsonl` 每条记录独占一行。
-6. 如果程序具备能力，建议使用安全追加方式，避免写坏文件。
+1. All writes must use **append mode**.
+2. Do not overwrite historical records.
+3. `worklog.md` appends complete blocks.
+4. `worklog.jsonl` places each record on a single dedicated line.
+5. `all_time.jsonl` places each record on a single dedicated line.
+6. Programs should use safe-append logic if capable, preventing file corruption.
 
 ---
 
 ## Search Expectations
 
-后续工具至少应支持基于 `worklog.jsonl` 或 `all_time.jsonl` 的这些筛选:
+Subsequent tools should at least support the following filters based on `worklog.jsonl` or `all_time.jsonl`:
 
-- 按 AI 查询
-- 按功能名查询
-- 按状态查询
-- 按文件路径查询
-- 按时间范围查询
-- 按行号关键字查询
-- 按任意词搜索
+- Query by AI
+- Query by feature name
+- Query by status
+- Query by file path
+- Query by time range
+- Keyword search by lines
+- Full-text arbitrary search
 
 ---
 
 ## What The AI Must Understand
 
-使用本 Skill 的 AI 必须理解以下要求:
+AI using this Skill must understand the following requirements:
 
-1. 每轮任务完成后，不是"可选记录"，而是"必须记录"。
-2. 记录内容必须围绕本轮实际改动，不得空泛。
-3. `ai` 字段必须使用外部传入的 `AI_ID`。
-4. `feature` 必须写项目中的实际功能名，不写抽象词堆砌。
-5. `summary` 必须一句话说明"做了什么 + 为了什么"。
-6. 每个文件只写自己的关联项。
-7. 没有的字段可留空或省略，但不能伪造。
-8. 不得把别的 AI 名称写进自己的日志身份字段。
+1. After each task round, recording is not "optional", but "mandatory".
+2. Records must center around actual changes of the current round. No vague statements.
+3. `ai` field must use the externally passed `AI_ID`.
+4. `feature` must use the actual feature name from the project, no abstract terms.
+5. `summary` must simply state "what was done + why" in one sentence.
+6. Each file must only write its own references.
+7. Omitted fields can be left empty or missing, but cannot be falsified.
+8. Do not write other AI names into your own log identity field.

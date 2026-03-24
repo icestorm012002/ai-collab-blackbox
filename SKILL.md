@@ -1,70 +1,71 @@
 ---
 name: ai-collab-blackbox
 description: >
-  为多 AI / 多通路协作开发提供统一的工作记录协议。每个 AI 在每轮任务结束后，
-  把本轮工作写入项目内 .ai/<AI_ID>/ 目录，同时生成人类可读的方块日志
-  (worklog.md) 和机器可检索的结构化日志 (worklog.jsonl)，可选维护全局汇总
-  (all_time.jsonl)。Use when: (1) AI 修改代码、新增/删除文件、重构、修复 bug、
-  更新配置后记录工作, (2) 完成一组待办中的若干项后记录进度, (3) 任务被阻塞、
-  失败或跳过时记录状态, (4) 需要让后续 AI 快速了解谁做了什么、改了哪些文件、
-  当前状态和剩余工作, (5) 即使本轮完全没有改动也可记录但必须写清状态。
+  A unified work logging protocol for multi-AI / multi-thread collaborative development.
+  After each task round, every AI writes its work log into the .ai/<AI_ID>/ directory
+  within the project. It generates a human-readable block log (worklog.md) and a machine-retrievable
+  structured log (worklog.jsonl) simultaneously, and optionally maintains a global timeline (all_time.jsonl).
 ---
 
 # ai-collab-blackbox
 
-为多 AI / 多通路协作开发提供统一的工作记录协议。
+[🇨🇳 中文说明 (Chinese Version)](SKILL_zh.md)
+
+> This project belongs to the **A1 Coder** team. A1 Coder is dedicated to building new paradigm products for human-machine collaboration and new types of AI in the AI era. Current products include this one, and the **Commander CLI**: an AI control terminal or IDE multi-thread, multi-node AI control center base.
+
+Provides a unified work logging protocol for multi-AI / multi-thread collaborative development.
 
 ## Required Runtime Inputs
 
-调用方必须在运行 Skill 前提供以下上下文值，AI 不得自行发明。
+The caller must provide the following context values before running the Skill. The AI must not invent them itself.
 
-| 变量 | 必填 | 说明 |
+| Variable | Required | Description |
 |------|------|------|
-| `PROJECT_ROOT` | 是 | 项目根目录路径 |
-| `AI_ID` | 是 | 当前 AI 的唯一目录标识，只能由外部传入 |
-| `FEATURE_NAME` | 是 | 本轮工作的功能名，必须是项目内实际功能 |
-| `STATUS` | 是 | 只能是: `done` / `doing` / `blocked` / `failed` / `skipped` |
-| `SUMMARY` | 是 | 一句话同时说明"做了什么 + 为了什么" |
-| `WORK_ITEMS` | 否 | 本轮工作列表状态，保留 `[x]`/`[ ]` 标记 |
-| `FILE_CHANGES` | 是 | 本轮修改文件列表，至少一条 |
-| `TIMESTAMP` | 是 | 格式: `YYYY-MM-DD HH:MM:SS`，程序生成优先 |
+| `PROJECT_ROOT` | Yes | Project root directory path |
+| `AI_ID` | Yes | The current AI's unique directory identifier, must be passed externally |
+| `FEATURE_NAME` | Yes | The actual feature name of the current work round |
+| `STATUS` | Yes | Must be one of: `done` / `doing` / `blocked` / `failed` / `skipped` |
+| `SUMMARY` | Yes | One sentence clarifying "what was done + why" |
+| `WORK_ITEMS` | No | Current work list status, preserve `[x]`/`[ ]` markers |
+| `FILE_CHANGES` | Yes | List of modified files in this round, at least one |
+| `TIMESTAMP` | Yes | Format: `YYYY-MM-DD HH:MM:SS`, script generation preferred |
 
-`FILE_CHANGES` 每个文件必须包含:
-- `path` — 项目内相对路径
-- `lines` — 受影响行号 (如 `12` / `12-20` / `12-20,45,80-93`)
-- `edit` — 修改说明
-- `refs` — 该文件自己的关联项 (可为空)
+Each file in `FILE_CHANGES` must contain:
+- `path` — Relative path within the project
+- `lines` — Affected line numbers (e.g. `12` / `12-20` / `12-20,45,80-93`)
+- `edit` — Modification description
+- `refs` — Associated references specific to this file (can be empty)
 
 ## Output Directory Contract
 
 ```
-${PROJECT_ROOT}/.ai/<AI_ID>/worklog.md      ← 方块日志 (人类可读)
-${PROJECT_ROOT}/.ai/<AI_ID>/worklog.jsonl   ← 结构化日志 (机器检索)
-${PROJECT_ROOT}/.ai/all_time.jsonl          ← 全局时间汇总 (可选)
+${PROJECT_ROOT}/.ai/<AI_ID>/worklog.md      ← Block log (human-readable)
+${PROJECT_ROOT}/.ai/<AI_ID>/worklog.jsonl   ← Structured log (machine-retrievable)
+${PROJECT_ROOT}/.ai/all_time.jsonl          ← Global time summary (optional)
 ```
 
-目录不存在时必须先创建。每个 AI 只写自己的目录。
+Directories must be created first if they do not exist. Each AI only writes to its own directory.
 
 ## Core Rules
 
-1. 每轮任务结束后，**必须**追加一条记录，不是"可选"。
-2. 同一条记录必须同时存在于 `worklog.md` 和 `worklog.jsonl`。
-3. 程序可选地把同一条 JSON 追加到 `all_time.jsonl`。
-4. `ai` 字段必须使用外部传入的 `AI_ID`，不允许自行猜测。
-5. `feature` 必须写项目中的实际功能名，不写抽象词。
-6. `summary` 必须一句话说明"做了什么 + 为了什么"。
-7. 每个文件只写自己的关联项，不把多个文件共用无法区分归属的关联项。
-8. 没有的字段可留空或省略，但不能伪造。
-9. 所有写入都使用**追加模式**，不覆盖历史记录。
-10. 任何占位符 (如 `<AI_ID>` / `<FILE_PATH>`) 不得原样落盘。
+1. After each task round, a record **must** be appended. It is not "optional".
+2. The same record must exist simultaneously in `worklog.md` and `worklog.jsonl`.
+3. The script can optionally append the same JSON record to `all_time.jsonl`.
+4. The `ai` field must use the externally passed `AI_ID`, no guessing allowed.
+5. The `feature` must report an actual feature name in the project, not abstract terms.
+6. The `summary` must state "what was done + why" in one sentence.
+7. Each file should only write its own references. Do not share ambiguous references across multiple files.
+8. Non-existent fields can be left blank or omitted, but must not be falsified.
+9. All writes use **append mode**, existing history must never be overwritten.
+10. Any placeholders (like `<AI_ID>` / `<FILE_PATH>`) must never be saved exactly as-is.
 
 ## Data Model
 
 ### JSONL Record
 
-每条记录独占一行，结构见 `references/data-model.md`。
+Each record takes up a single line, schema see `references/data-model.md`.
 
-快速参考:
+Quick reference:
 
 ```json
 {
@@ -72,96 +73,93 @@ ${PROJECT_ROOT}/.ai/all_time.jsonl          ← 全局时间汇总 (可选)
   "ai": "<AI_ID>",
   "feature": "<FEATURE_NAME>",
   "status": "done",
-  "summary": "实现了 X 以支持 Y",
-  "work_status": ["[x] 任务A", "[ ] 任务B"],
+  "summary": "Implemented X to support Y",
+  "work_status": ["[x] Task A", "[ ] Task B"],
   "files": [
     {
       "path": "src/foo.py",
       "lines": "12-20,45",
-      "edit": "添加了重试逻辑",
-      "refs": ["关联到 bar.py 的错误处理"]
+      "edit": "Added retry logic",
+      "refs": ["Related to error handling in bar.py"]
     }
   ]
 }
 ```
 
-**字段详细规则**: 见 [references/data-model.md](references/data-model.md)
+**Detailed field rules**: see [references/data-model.md](references/data-model.md)
 
 ### Block Format (worklog.md)
 
-每次追加一个完整方块:
+Append a complete block each time:
 
 ```
 === WORKLOG START ===
-[YYYY-MM-DD HH:MM:SS] [<AI_ID>] [user-auth] [done]
-Implemented login retry logic to improve authentication reliability
+[YYYY-MM-DD HH:MM:SS] [<AI_ID>] [<FEATURE_NAME>] [done]
+<SUMMARY>
 
-Work Items:
-- [x] Add retry on timeout
-- [ ] Add rate limiting
+Work Status:
+- [x] Task A
+- [ ] Task B
 
 Files:
-- src/auth/login.py | 12-45 | Added retry wrapper
+- src/foo.py | 12-45 | Description
   Refs:
-  - Depends on src/auth/base.py abstract interface
-
-- src/config.py | 88 | Added max retry config
+  - ref1
 === WORKLOG END ===
 ```
 
-**方块渲染规则**: 见 [references/data-model.md](references/data-model.md)
+**Block rendering rules**: see [references/data-model.md](references/data-model.md)
 
 ## Program Flow
 
-优先实现 **Mode A** (AI 输出 JSON → 程序校验 → 程序生成三份文件)。
+Implementing **Mode A** is prioritized (AI outputs JSON → Program validates → Program generates three files).
 
-**详细流程和校验规则**: 见 [references/program-flow.md](references/program-flow.md)
+**Detailed flow and validation rules**: see [references/program-flow.md](references/program-flow.md)
 
 ## Scripts
 
-- **`scripts/write_worklog.py`** — 主执行脚本 (Mode A 完整流程)
-  - 接收 JSON → 校验 → 写入 `worklog.jsonl` → 渲染方块写入 `worklog.md` → 追加 `all_time.jsonl`
-- `scripts/validate_worklog.py` — 校验 JSONL 记录是否符合规范
-- `scripts/render_block.py` — 将 JSON 记录渲染为方块日志文本
+- **`scripts/write_worklog.py`** — Main execution script (Mode A complete flow)
+- `scripts/validate_worklog.py` — Validate if JSONL records comply with the specification
+- `scripts/render_block.py` — Render JSON records into block log text
 
 ## AI Execution Flow
 
-每轮任务结束后，AI 必须执行以下步骤:
+After finishing the current task round, the AI must execute the following steps:
 
-### Step 1: 构造 JSON 记录
+### Step 1: Construct JSON Record
 
-将本轮工作整理为一条符合规范的 JSON:
+Organize the work of this round into a compliant JSON:
 
 ```json
 {
   "ts": "YYYY-MM-DD HH:MM:SS",
-  "ai": "<外部传入的 AI_ID>",
-  "feature": "实际功能名",
+  "ai": "<Externally passed AI_ID>",
+  "feature": "Actual feature name",
   "status": "done",
-  "summary": "做了什么以实现什么",
-  "work_status": ["[x] 已完成项", "[ ] 未完成项"],
+  "summary": "What was done to achieve what",
+  "work_status": ["[x] Completed item", "[ ] Incomplete item"],
   "files": [
     {
       "path": "src/foo.py",
       "lines": "12-20,45",
-      "edit": "改动说明",
+      "edit": "Change description",
       "refs": []
     }
   ]
 }
 ```
 
-### Step 2: 调用写入脚本
+### Step 2: Call the write script
 
 ```bash
 python <SKILL_DIR>/scripts/write_worklog.py --project-root <PROJECT_ROOT> --json '<JSON>'
 ```
 
-脚本会自动完成: 校验 → 写入 jsonl → 渲染方块 → 写入 md → 追加 all_time
+The script will automatically finish: validation → write jsonl → render block → write md → append all_time.
 
-### Step 3: 确认输出
+### Step 3: Check Output
 
-脚本成功后会输出:
+If successful, the script outputs:
 ```
 [OK] worklog.jsonl <- .ai/<AI_ID>/worklog.jsonl
 [OK] worklog.md    <- .ai/<AI_ID>/worklog.md
@@ -169,28 +167,24 @@ python <SKILL_DIR>/scripts/write_worklog.py --project-root <PROJECT_ROOT> --json
 [DONE] AI=<AI_ID>, feature=<FEATURE>, status=<STATUS>
 ```
 
-若校验失败，脚本会输出错误详情并以 exit code 1 退出，不写入任何文件。
+If validation fails, the script will output detailed errors, exit with code 1, and write nothing.
 
 ## Minimal AI Instruction Snippet
 
-下面这段可以直接给编程 AI 当作硬提示:
+The following block can be used as a hard prompt for a coding AI:
 
-> 当你完成当前轮任务后，必须把本轮工作记录到项目内 `.ai/<AI_ID>/` 目录下。
-> 你必须输出一条结构化记录，包含时间、AI 标识、功能名、状态、一句话总结、
-> 工作列表状态、文件改动列表，以及每个文件自己的关联项。AI_ID 必须使用外部
-> 传入值，不允许自行猜测。程序会基于你的结构化记录生成 worklog.md、
-> worklog.jsonl 和全局 all_time.jsonl。你的记录必须可解析、字段完整、
-> 不得使用示例值或占位符原样输出。
+> When you complete the current task round, you must record this round's work in the `.ai/<AI_ID>/` directory within the project.
+> You must output one structured record including timestamp, AI identifier, feature name, status, a one-sentence summary, task list status, file change list, and references specifically belonging to each file. AI_ID must use the externally passed value, no guessing allowed. The script will generate worklog.md, worklog.jsonl, and the global all_time.jsonl based on your structured record. Your record must be parseable, field-complete, and must not output example values or placeholders exactly as-is.
 
 ## Non-Goals
 
-本 Skill 不负责:
-- 自动解析 IDE 所有操作历史
-- 自动生成 git diff
-- 自动推断真实行号是否百分百准确
-- 自动理解所有任务规划系统
-- 自动决定项目目录结构以外的命名规范
+This Skill is not responsible for:
+- Auto-parsing all IDE operation history
+- Auto-generating git diffs
+- Auto-deducing if file line numbers are 100% accurate
+- Auto-understanding all task planning systems
+- Auto-deciding naming conventions beyond the project directory structure
 
 ## Final Principle
 
-> 以结构化记录为源，以方块日志为展示，以全局时间线为检索入口。
+> Taking structured records as the source, block logs for presentation, and global timelines as search entry points.
