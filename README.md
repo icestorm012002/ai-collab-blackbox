@@ -51,7 +51,7 @@ cp -r ai-collab-blackbox/.  your-project/.agents/skills/ai-collab-blackbox/
 
 ### 2. Log a work record
 
-When an AI finishes a coding or analysis task round, it automatically generates a structured JSON summary of its work and calls the write script:
+Prepare a JSON record and run the write script:
 
 ```bash
 python scripts/write_worklog.py \

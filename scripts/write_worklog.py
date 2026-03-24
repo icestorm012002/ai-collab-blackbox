@@ -162,6 +162,16 @@ def main():
         write_global=not args.no_global,
     )
 
+    # 自动清理临时文件：停顿1秒后主动删掉 AI 写入的临时 JSON 文件
+    if args.json_file and os.path.exists(args.json_file):
+        import time
+        time.sleep(1)
+        try:
+            os.remove(args.json_file)
+            print(f"[CLEANUP] Deleted temporary file: {args.json_file}")
+        except Exception as e:
+            print(f"[WARN] Failed to delete temporary file {args.json_file}: {e}", file=sys.stderr)
+
 
 if __name__ == "__main__":
     main()

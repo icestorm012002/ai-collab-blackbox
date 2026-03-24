@@ -49,9 +49,9 @@
 cp -r ai-collab-blackbox/.  your-project/.agents/skills/ai-collab-blackbox/
 ```
 
-### 2. 由 AI 自动记录工作日志
+### 2. 记录工作日志
 
-当 AI 在完成了一轮切实的任务后，它会自动根据本次的操作生成这份工作记录（JSON文本），并利用 Python 脚本将其落盘保存：
+提前准备好一份 JSON 记录并通过运行写入脚本执行落地：
 
 ```bash
 python scripts/write_worklog.py \

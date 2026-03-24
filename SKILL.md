@@ -126,9 +126,9 @@ Implementing **Mode A** is prioritized (AI outputs JSON → Program validates �
 
 After finishing the current task round, the AI must execute the following steps:
 
-### Step 1: Construct JSON Record
+### Step 1: Generate a temporary, non-real JSON record file
 
-Organize the work of this round into a compliant JSON:
+The AI must write its structured JSON work log into a temporary file (e.g., `temp_worklog.json`). The AI must NEVER touch or attempt to write directly to the real `.ai/<AI_ID>/worklog.md` and related files itself.
 
 ```json
 {
@@ -148,14 +148,17 @@ Organize the work of this round into a compliant JSON:
   ]
 }
 ```
+*(Save the above to `temp_worklog.json`)*
 
 ### Step 2: Call the write script
 
+The AI invokes the terminal to run the Python script, passing the temporary file so the program can write the real log files:
+
 ```bash
-python <SKILL_DIR>/scripts/write_worklog.py --project-root <PROJECT_ROOT> --json '<JSON>'
+python <SKILL_DIR>/scripts/write_worklog.py --project-root <PROJECT_ROOT> --file temp_worklog.json
 ```
 
-The script will automatically finish: validation → write jsonl → render block → write md → append all_time.
+The script will automatically finish: validation → write jsonl → render block → write md → append all_time. **Once writing is complete, the script will wait 1 second and then automatically delete this temporary JSON file.**
 
 ### Step 3: Check Output
 
@@ -173,8 +176,10 @@ If validation fails, the script will output detailed errors, exit with code 1, a
 
 The following block can be used as a hard prompt for a coding AI:
 
-> When you complete the current task round, you must record this round's work in the `.ai/<AI_ID>/` directory within the project.
-> You must output one structured record including timestamp, AI identifier, feature name, status, a one-sentence summary, task list status, file change list, and references specifically belonging to each file. AI_ID must use the externally passed value, no guessing allowed. The script will generate worklog.md, worklog.jsonl, and the global all_time.jsonl based on your structured record. Your record must be parseable, field-complete, and must not output example values or placeholders exactly as-is.
+> When you complete the current task round, you must record this round's work in the `.ai/<AI_ID>/` directory.
+> Protocol constraint: You must NEVER touch the real `.ai` log files directly! First, you must write the record of your current work round (including timestamp, AI_ID assigned to you, feature name, output status, one-sentence summary, task completion state, modified files list, and file-specific refs) into a non-real, temporary JSON file.
+> Then, you must invoke the dedicated Python logging script (using the --file argument to pass your temporary file). This particular program will strictly write the records into worklog.md, worklog.jsonl, and summarize it in the global all_time.jsonl on your behalf. After the writing is finished, the program will wait exactly 1 second and then automatically delete your temporary JSON file.
+> Your record structure must be 100% formatted, containing no arbitrary placeholder characters. The AI_ID must strictly use the externally assigned value passed to you; you are forbidden from inventing a name.
 
 ## Non-Goals
 
