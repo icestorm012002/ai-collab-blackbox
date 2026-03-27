@@ -5,6 +5,11 @@ __pycache__/
 *.pyd
 .Python
 
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
 # Test records
 *.test.json
 
